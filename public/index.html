@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación de Ejercicios con Pesas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <style>
+        /* Estilos previamente definidos */
+        .loading-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+.loading-card {
+  width: 200px;
+  height: 250px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  margin: 10px;
+  border-radius: 8px;
+}
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Aplicación de Ejercicios con Pesas</h1>
+
+        <!-- Sección de autenticación -->
+        <div id="authSection" class="mb-4">
+            <div id="loginForm">
+                <h2>Iniciar sesión</h2>
+                <input type="email" id="loginEmail" placeholder="Email" class="form-control mb-2">
+                <input type="password" id="loginPassword" placeholder="Contraseña" class="form-control mb-2">
+                <button onclick="login()" class="btn btn-primary">Iniciar sesión</button>
+                <button onclick="showRegisterForm()" class="btn btn-secondary">Registrarse</button>
+            </div>
+            <div id="registerForm" style="display: none;">
+                <h2>Registrarse</h2>
+                <input type="email" id="registerEmail" placeholder="Email" class="form-control mb-2">
+                <input type="password" id="registerPassword" placeholder="Contraseña" class="form-control mb-2">
+                <button onclick="register()" class="btn btn-primary">Registrarse</button>
+                <button onclick="showLoginForm()" class="btn btn-secondary">Volver al inicio de sesión</button>
+            </div>
+            <div id="userInfo" style="display: none;">
+                <p>Bienvenido, <span id="userEmail"></span></p>
+                <button onclick="logout()" class="btn btn-danger">Cerrar sesión</button>
+            </div>
+        </div>
+
+     <!-- Contenido principal (oculto hasta que el usuario inicie sesión) -->
+        <!-- <div id="mainContent" style="display: none;">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-center mb-4">
+                        <div class="ejercicio card-body">
+                            <img src="/assets/img/image.png" class="card-img-top rounded" alt="Press de Banca" data-bs-toggle="modal" data-bs-target="#ejercicioModal" data-ejercicio="Press de Banca">
+                            <h5 class="card-title mt-3">Press de Banca</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center mb-4">
+                        <div class="ejercicio card-body">
+                            <img src="/assets/img/image.png" class="card-img-top rounded" alt="Sentadillas" data-bs-toggle="modal" data-bs-target="#ejercicioModal" data-ejercicio="Sentadillas">
+                            <h5 class="card-title mt-3">Sentadillas</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center mb-4">
+                        <div class="ejercicio card-body">
+                            <img src="/assets/img/image.png" class="card-img-top rounded" alt="Peso Muerto" data-bs-toggle="modal" data-bs-target="#ejercicioModal" data-ejercicio="Peso Muerto">
+                            <h5 class="card-title mt-3">Peso Muerto</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>    
+    </div>  -->
+    
+    <!-- borrador -->
+    <div id="mainContent" style="display: none;">
+        <div class="row" id="ejerciciosContainer">
+          <!-- Los ejercicios se insertarán aquí dinámicamente -->
+        </div>
+      </div>
+    
+     <!-- ejericcio cargados dinamicamnet  -->
+     <!-- Contenido principal (oculto hasta que el usuario inicie sesión) -->
+    <div id="mainContent" >
+        <div class="row" id="ejerciciosContainer">
+            <div id="loadingEffect" class="loading-container">
+                <div class="loading-card"></div>
+                <div class="loading-card"></div>
+                <div class="loading-card"></div>
+              </div>
+          <!-- Los ejercicios se cargarán dinámicamente aquí -->
+        </div>
+      </div>
+        
+              
+    <!-- Modal tabla de pesos-->
+    <div class="modal fade" id="ejercicioModal" tabindex="-1" aria-labelledby="ejercicioModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ejercicioModalLabel">Tabla de Pesos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    
+                </div>
+                <div class="modal-body">
+                    <table id="tabla-pesos" class="table">
+                        <thead>
+                            <tr>
+                                <th>Repeticiones</th>
+                                <th>Peso (kg)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- La tabla se llenará dinámicamente -->
+                        </tbody>
+                    </table>
+                    <div class="text-center mt-4">
+                        <!-- Botones relevantes dentro del contexto -->
+                        <button class="btn btn-primary" onclick="calcular1RM()">Calcular 1RM</button>
+                        <button class="btn btn-secondary" onclick="verRegistros()">Ver Registros</button>
+                    </div>
+
+                    <!-- Formulario para calcular 1RM -->
+                <!-- <div id="rm-form" style="display: none;" class="mt-4"> -->
+                    <!-- <h5>Calcular 1RM</h5>
+                    <div class="mb-3">
+                        <label for="pesoUsado" class="form-label">Peso Usado (kg)</label>
+                        <input type="number" class="form-control" id="pesoUsado" placeholder="Ingresa el peso usado">
+                    </div>
+                    <div class="mb-3">
+                        <label for="repsLogradas" class="form-label">Repeticiones</label>
+                        <input type="number" class="form-control" id="repsLogradas" placeholder="Ingresa las repeticiones logradas">
+                    </div>
+                    <button class="btn btn-success" onclick="calcular1RM()">Calcular y Guardar</button> -->
+                </div>
+
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario para calcular 1RM -->
+    <div class="modal fade" id="calculo1RMModal" tabindex="-1" aria-labelledby="calculo1RMModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="calculo1RMModalLabel">Calcular 1RM</h5>
+                    <button type="button" class="btn-close" onclick="cerrarModal('calculo1RMModal')" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rm-form">
+                        <div class="mb-3">
+                            <label for="pesoUsado" class="form-label">Peso Usado (kg)</label>
+                            <input type="number" class="form-control" id="pesoUsado" placeholder="Ingresa el peso usado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="repsLogradas" class="form-label">Repeticiones</label>
+                            <input type="number" class="form-control" id="repsLogradas" placeholder="Ingresa las repeticiones logradas" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="volverATabla()">Volver</button>
+                    <button type="button" class="btn btn-success" onclick="guardar1RM()">Calcular y Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Registros -->
+    <div class="modal fade" id="recordsModal" tabindex="-1" aria-labelledby="recordsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="recordsModalLabel">Registros Guardados</h5>
+                    <button type="button" class="btn-close" onclick="cerrarModal('recordsModal')" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table id="tabla-registros" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>RM</th>
+                                <th>Peso</th>
+                                <th>Repeticiones</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Los registros se llenarán dinámicamente con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="volverATabla()">Volver</button>
+        
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('recordsModal')">Cerrar</button>
+                    <!-- En el modal de registros -->
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXVn_VNPzVqcG4xQlhmM12E5EgkY5sT60",
+            authDomain: "gym-claude-687b5.firebaseapp.com",
+            projectId: "gym-claude-687b5",
+            storageBucket: "gym-claude-687b5.appspot.com",
+            messagingSenderId: "504115001424",
+            appId: "1:504115001424:web:86b8a0044a44bd03743955",
+            measurementId: "G-Q663J1MVKY"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        //listener de estado de autenticacion
+        auth.onAuthStateChanged((user) => {
+            if(user){
+                           // Usuario ha iniciado sesión
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+
+                //carga imagenes dinamicamnete traidas desde firebase
+                cargarEjerciciosDesdeFirebase();
+            } else {
+                // Usuario no ha iniciado sesión
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'none';
+            }
+
+        });
+
+        // Funciones de autenticación
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            auth.signInWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    console.error("Error de inicio de sesión:", error);
+                    alert("Error de inicio de sesión: " + error.message);
+                });
+        }
+
+        //registrarse
+        // Crear un nuevo usuari
+
+        
+
+
+        function register() {
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+
+            // Crear documento en Firestore para el nuevo usuario
+            db.collection('users').doc(user.uid).set({
+                email: user.email,
+                name: "", // Puedes solicitar un nombre en el formulario de registro y usarlo aquí.
+                role: "user", // Asigna "user" por defecto. Puedes cambiar a "admin" si es necesario.
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                console.log("Usuario registrado y documento creado en Firestore.");
+            })
+            .catch((error) => {
+                console.error("Error al crear documento en Firestore:", error);
+            });
+        })
+        .catch((error) => {
+            console.error("Error de registro:", error);
+            alert("Error de registro: " + error.message);
+        });
+}
+
+
+        function logout() {
+            auth.signOut().then(() => {
+                console.log("Sesión cerrada");
+            }).catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+            });
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const myModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
+    
+    document.querySelectorAll('.ejercicio img').forEach(img => {
+        img.addEventListener('click', function() {
+            const ejercicio = this.getAttribute('data-ejercicio');
+            const modalTitle = document.querySelector('#ejercicioModalLabel');
+            modalTitle.textContent = `Tabla de Pesos - ${ejercicio}`;
+            
+            cargarTablaDePesos(ejercicio);
+            myModal.show();
+        });
+    });
+});
+
+function checkUserRole(user) {
+    if (user) {
+        db.collection('users').doc(user.uid).get()
+            .then((doc) => {
+                if (doc.exists && doc.data().role === 'admin') {
+                    // Redirigir a la página de administración
+                    window.location.href = 'admin.html';
+                } else {
+                    // Mostrar la interfaz de usuario normal
+                    showUserInterface();
+                }
+            })
+            .catch((error) => {
+                console.error("Error al verificar el rol del usuario:", error);
+            });
+    } else {
+        // Usuario no autenticado, mostrar interfaz de login
+        showLoginInterface();
+    }
+}
+
+//cargar datos en tabla dentro del modal 1
+function cargarTablaDePesos(ejercicio) {
+    const user = auth.currentUser;
+    if (!user) {
+        console.error("Usuario no autenticado");
+        return;
+    }
+
+    console.log(ejercicio)
+    db.collection("historialRM")
+        .where("userId", "==", user.uid)
+        .where("ejercicio", "==", ejercicio)
+        .orderBy("fecha", "desc")
+        .limit(1)
+        .get()
+        .then((querySnapshot) => {
+            const tablaHistorial = document.getElementById("tabla-pesos").getElementsByTagName("tbody")[0];
+            tablaHistorial.innerHTML = ""; // Limpia la tabla
+
+            if (querySnapshot.empty) {
+                console.log("No se encontraron registros para este ejercicio");
+                tablaHistorial.innerHTML = "<tr><td colspan='2'>No se encontraron registros</td></tr>";
+                return;
+            }
+            
+            const doc = querySnapshot.docs[0];
+            const rm = doc.data().rm;
+
+            for (let rep = 1; rep <= 15; rep++) {
+                const row = tablaHistorial.insertRow();
+                const repCell = row.insertCell();
+                const pesoCell = row.insertCell();
+                
+                repCell.textContent = rep;
+                // Cálculo del peso usando la fórmula de Brzycki
+                const peso = rm * (1.0278 - 0.0278 * rep);
+                pesoCell.textContent = Math.round(peso * 100) / 100 + " kg"; // Redondear a 2 decimales
+            }
+        })
+        .catch((error) => {
+            console.error("Error al obtener los documentos: ", error);
+            alert("Error al obtener los registros: " + error.message);
+            document.getElementById("tabla-pesos").getElementsByTagName("tbody")[0].innerHTML = "<tr><td colspan='2'>Error al cargar los datos</td></tr>";
+        });
+}
+
+//boton para ver registros histtoricos con dia mes año, RM, peso y repeticiones , ejercicio.
+// Función para ver registros históricos
+function verRegistros() {
+    const user = auth.currentUser;
+            if (!user) {
+                console.error("Usuario no autenticado");
+                return;
+            }
+    console.log("Iniciando función verRegistros()");
+    
+    const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
+    console.log("Ejercicio seleccionado:", ejercicio);
+    
+    // Cerrar el modal de la tabla de pesos
+    const tablaPesosModal = bootstrap.Modal.getInstance(document.getElementById('ejercicioModal'));
+    tablaPesosModal.hide();
+
+    // Abrir el modal de registros
+    const recordsModal = new bootstrap.Modal(document.getElementById('recordsModal'));
+    recordsModal.show();
+
+    document.getElementById('recordsModal').addEventListener('shown.bs.modal', function () {
+        console.log("Modal de registros mostrado");
+        
+        const tabla = document.getElementById("tabla-registros");
+        if (!tabla) {
+            console.error("No se pudo encontrar la tabla con id 'tabla-registros'");
+            alert("Error: No se pudo encontrar la tabla de registros");
+            return;
+        }
+
+        let tbody = tabla.querySelector("tbody");
+        if (!tbody) {
+            console.log("No se encontró <tbody>, creando uno nuevo");
+            tbody = document.createElement("tbody");
+            tabla.appendChild(tbody);
+        }
+
+        // Limpiar la tabla
+        tbody.innerHTML = "";
+        console.log("Tabla limpiada");
+
+        // Realizar la consulta a Firestore
+        db.collection("historialRM")
+            .where("userId", "==", user.uid)
+            .where("ejercicio", "==", ejercicio)
+            .orderBy("fecha", "desc")
+            .get()
+            .then((querySnapshot) => {
+                console.log("Consulta a Firestore completada");
+                if (querySnapshot.empty) {
+                    const row = tbody.insertRow();
+                    const cell = row.insertCell();
+                    cell.colSpan = 5;
+                    cell.textContent = "No se encontraron registros para este ejercicio";
+                    console.log("No se encontraron registros");
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const row = tbody.insertRow();
+                        const data = doc.data();
+                        
+                        // Fecha
+                        const date = data.fecha.toDate();
+                        row.insertCell().textContent = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+                        
+                        // RM, Peso, Repeticiones
+                        row.insertCell().textContent = data.rm;
+                        row.insertCell().textContent = data.peso;
+                        row.insertCell().textContent = data.reps;
+                        
+                        // Acciones
+                        const accionesCell = row.insertCell();
+                        const editarBtn = document.createElement('button');
+                        editarBtn.textContent = 'Editar';
+                        editarBtn.className = 'btn btn-sm btn-warning me-2';
+                        editarBtn.onclick = () => editarRegistro(doc.id, data);
+                        
+                        const borrarBtn = document.createElement('button');
+                        borrarBtn.textContent = 'Borrar';
+                        borrarBtn.className = 'btn btn-sm btn-danger';
+                        borrarBtn.onclick = () => eliminarRegistro(doc.id);
+                        
+                        accionesCell.appendChild(editarBtn);
+                        accionesCell.appendChild(borrarBtn);
+                    });
+                    console.log("Registros añadidos a la tabla");
+                }
+            })
+            .catch((error) => {
+                console.error("Error al obtener los documentos: ", error);
+                alert("Error al obtener los registros: " + error.message);
+            });
+    }, { once: true }); // Añadimos { once: true } para que el evento solo se ejecute una vez
+}
+
+
+
+function volverATabla() {
+    console.log("Volviendo a la tabla de pesos");
+    
+    // Cerrar el modal de cálculo 1RM si está abierto
+    const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
+    if (calculo1RMModal) {
+        calculo1RMModal.hide();
+    }
+
+    // Cerrar el modal de registros si está abierto
+    const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
+    if (recordsModal) {
+        recordsModal.hide();
+    }
+
+    // Abrir el modal de la tabla de pesos
+    const tablaPesosModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
+    tablaPesosModal.show();
+
+    // Recargar la tabla de pesos
+    const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
+    cargarTablaDePesos(ejercicio);
+}
+   
+
+
+// Modificar la función calcular1RM para resetear el formulario y el botón
+function calcular1RM() {
+    console.log("Abriendo modal de cálculo 1RM");
+    
+    // Resetear el formulario
+    document.getElementById('pesoUsado').value = '';
+    document.getElementById('repsLogradas').value = '';
+
+    // Resetear el texto y la función del botón
+    const guardarBtn = document.querySelector('#calculo1RMModal .btn-success');
+    guardarBtn.textContent = 'Calcular y Guardar';
+    guardarBtn.onclick = guardar1RM;
+
+    // Cerrar el modal de la tabla de pesos
+    const tablaPesosModal = bootstrap.Modal.getInstance(document.getElementById('ejercicioModal'));
+    tablaPesosModal.hide();
+
+    // Abrir el modal de cálculo 1RM
+    const calculo1RMModal = new bootstrap.Modal(document.getElementById('calculo1RMModal'));
+    calculo1RMModal.show();
+}
+
+// Modificar la función guardar1RM para resetear el formulario después de guardar
+async function guardar1RM() {
+    const user = auth.currentUser;
+            if (!user) {
+                console.error("Usuario no autenticado");
+                return;
+            }
+
+    console.log("Iniciando cálculo y guardado de 1RM");
+    
+    const peso = parseFloat(document.getElementById('pesoUsado').value);
+    const reps = parseInt(document.getElementById('repsLogradas').value);
+    const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
+
+    if (isNaN(peso) || isNaN(reps) || peso <= 0 || reps <= 0) {
+        alert('Por favor, ingrese valores válidos para peso y repeticiones.');
+        return;
+    }
+
+    // Fórmula de Brzycki para estimar 1RM
+    const rm1 = Math.round(peso / (1.0278 - 0.0278 * reps));
+
+    const nuevoRegistro = {
+        userId: user.uid,
+        fecha: new Date(),
+        rm: rm1,
+        peso: peso,
+        reps: reps,
+        ejercicio: ejercicio
+    };
+
+    // Colección: historialRM
+{
+//   id: string, // ID del documento (generado automáticamente por Firestore)
+  
+  
+  
+ 
+}
+
+    try {
+        await db.collection("historialRM").add(nuevoRegistro);
+        console.log("Registro guardado en Firestore con éxito");
+        alert(`Nuevo 1RM calculado y guardado: ${rm1} kg`);
+        
+        // Resetear el formulario
+        document.getElementById('pesoUsado').value = '';
+        document.getElementById('repsLogradas').value = '';
+        
+        // Cerrar el modal de cálculo 1RM
+        const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
+        calculo1RMModal.hide();
+
+        // Volver a la tabla de pesos
+        volverATabla();
+    } catch (error) {
+        console.error("Error al guardar en Firestore: ", error);
+        alert("Hubo un error al guardar el registro en la base de datos.");
+    }
+}
+
+// Función para eliminar un registro
+function eliminarRegistro(docId) {
+    if (confirm('¿Estás seguro de que quieres eliminar este registro?')) {
+        db.collection("historialRM").doc(docId).delete().then(() => {
+            console.log("Registro eliminado con éxito");
+            alert("Registro eliminado con éxito");
+            // En lugar de llamar a verRegistros, cerramos el modal actual y volvemos a abrirlo
+            const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
+            recordsModal.hide();
+            setTimeout(() => verRegistros(), 500); // Esperamos un poco antes de volver a abrir el modal
+        }).catch((error) => {
+            console.error("Error al eliminar el registro: ", error);
+            alert("Error al eliminar el registro: " + error.message);
+        });
+    }
+}
+
+
+
+// Función para editar un registro
+function editarRegistro(docId, data) {
+    console.log("Editando registro:", docId);
+    
+    // Cerrar el modal de registros
+    const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
+    recordsModal.hide();
+
+    // Abrir el modal de cálculo 1RM
+    const calculo1RMModal = new bootstrap.Modal(document.getElementById('calculo1RMModal'));
+    calculo1RMModal.show();
+
+    // Rellenar el formulario con los datos actuales
+    document.getElementById('pesoUsado').value = data.peso;
+    document.getElementById('repsLogradas').value = data.reps;
+
+    // Cambiar el texto del botón
+    const guardarBtn = document.querySelector('#calculo1RMModal .btn-success');
+    guardarBtn.textContent = 'Actualizar';
+    
+    // Cambiar la función del botón
+    guardarBtn.onclick = () => actualizarRegistro(docId);
+}
+
+// Función para actualizar un registro
+async function actualizarRegistro(docId) {
+    console.log("Actualizando registro:", docId);
+    
+    const peso = parseFloat(document.getElementById('pesoUsado').value);
+    const reps = parseInt(document.getElementById('repsLogradas').value);
+    const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
+
+    if (isNaN(peso) || isNaN(reps) || peso <= 0 || reps <= 0) {
+        alert('Por favor, ingrese valores válidos para peso y repeticiones.');
+        return;
+    }
+
+    // Fórmula de Brzycki para estimar 1RM
+    const rm1 = Math.round(peso / (1.0278 - 0.0278 * reps));
+
+    const registroActualizado = {
+        fecha: new Date(),
+        rm: rm1,
+        peso: peso,
+        reps: reps,
+        ejercicio: ejercicio
+    };
+
+    try {
+        await db.collection("historialRM").doc(docId).update(registroActualizado);
+        console.log("Registro actualizado en Firestore con éxito");
+        alert(`Registro actualizado con éxito. Nuevo 1RM: ${rm1} kg`);
+        
+        // Cerrar el modal de cálculo 1RM
+        const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
+        calculo1RMModal.hide();
+
+        // Volver a la tabla de registros
+        verRegistros();
+    } catch (error) {
+        console.error("Error al actualizar en Firestore: ", error);
+        alert("Hubo un error al actualizar el registro en la base de datos.");
+    }
+}
+
+//el directoiro de la imagens es public, esta funcion busca este direcorio y lo agrega a la URL del html
+function getImageUrl(url) {
+  return `/public/${url}`;
+}
+
+// Y luego usarla en tu HTML así:
+
+//cargar contenido imagenes de ejercicios dinamicamnete 
+// Función para cargar ejercicios dinámicamente
+// Asegúrate de haber inicializado Firebase antes de usar estas funciones
+
+function cargarEjerciciosDesdeFirebase() {
+  const ejerciciosContainer = document.getElementById('ejerciciosContainer');
+  const loadingEffect = document.getElementById('loadingEffect'); // Asegúrate de tener este elemento en tu HTML
+
+  // Mostrar efecto de carga
+  loadingEffect.style.display = 'block';
+  ejerciciosContainer.style.display = 'none';
+
+  db.collection("ejercicios").get().then((querySnapshot) => {
+    // Ocultar efecto de carga y mostrar contenedor de ejercicios
+    loadingEffect.style.display = 'none';
+    ejerciciosContainer.style.display = 'flex';
+
+    ejerciciosContainer.innerHTML = ''; // Limpia el contenedor
+
+    //     <img src="${ejercicio.imagenUrl}" class="card-img-top rounded" alt="${ejercicio.nombre}" esta linea fue reemplaada pafra verigicar las imagens
+
+    querySnapshot.forEach((doc) => {
+      const ejercicio = doc.data();
+      const ejercicioHTML = `
+        <div class="col-md-4">
+          <div class="card text-center mb-4">
+            <div class="ejercicio card-body">
+                <img src="${getImageUrl(ejercicio.imagenUrl)}" class="card-img-top rounded" alt="${ejercicio.nombre}"
+         
+                   data-bs-toggle="modal" data-bs-target="#ejercicioModal" data-ejercicio="${ejercicio.nombre}">
+              <h5 class="card-title mt-3">${ejercicio.nombre}</h5>
+            </div>
+          </div>
+        </div>
+      `;
+      ejerciciosContainer.innerHTML += ejercicioHTML;
+    });
+    
+    // Vuelve a agregar los event listeners después de cargar el contenido
+    agregarEventListeners();
+  }).catch((error) => {
+    console.error("Error al cargar ejercicios:", error);
+    loadingEffect.style.display = 'none';
+    ejerciciosContainer.innerHTML = '<p>Error al cargar los ejercicios. Por favor, intenta de nuevo más tarde.</p>';
+  });
+}
+
+function agregarEventListeners() {
+  document.querySelectorAll('.ejercicio img').forEach(img => {
+    img.addEventListener('click', function() {
+      const ejercicio = this.getAttribute('data-ejercicio');
+      const modalTitle = document.querySelector('#ejercicioModalLabel');
+      modalTitle.textContent = `Tabla de Pesos - ${ejercicio}`;
+      cargarTablaDePesos(ejercicio);
+      // Asumiendo que estás usando Bootstrap para los modales
+      var myModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
+      myModal.show();
+    });
+  });
+}
+
+//////////modales////////
+
+//cerrar modal 
+function cerrarModal(modalId) {
+    const modal = document.getElementById(modalId);
+    const modalInstance = bootstrap.Modal.getInstance(modal);
+    if (modalInstance) {
+        modalInstance.hide();
+    }
+    limpiarBackdrop();
+}
+
+function limpiarBackdrop() {
+    // Eliminar manualmente el backdrop si persiste
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
+    // Restaurar el scroll del body
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+}
+
+function inicializarModales() {
+    const modales = ['ejercicioModal', 'calculo1RMModal', 'recordsModal'];
+    modales.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function () {
+                limpiarBackdrop();
+            });
+        }
+    });
+}
+
+// Llamar a esta función cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', inicializarModales);
+
+
+
+// <!-- En el modal de ejercicio -->
+// <button type="button" class="btn-close" onclick="cerrarModal('ejercicioModal')" aria-label="Close"></button>
+// <button type="button" class="btn btn-secondary" onclick="cerrarModal('ejercicioModal')">Cerrar</button>
+
+// <!-- En el modal de cálculo 1RM -->
+// <button type="button" class="btn-close" onclick="cerrarModal('calculo1RMModal')" aria-label="Close"></button>
+// <button type="button" class="btn btn-secondary" onclick="cerrarModal('calculo1RMModal')">Cerrar</button>
+
+// <!-- En el modal de registros -->
+// <button type="button" class="btn-close" onclick="cerrarModal('recordsModal')" aria-label="Close"></button>
+// <button type="button" class="btn btn-secondary" onclick="cerrarModal('recordsModal')">Cerrar</button>
+
+
+
+
+    </script>
+</body>
+</html>

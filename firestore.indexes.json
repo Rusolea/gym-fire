@@ -1,0 +1,37 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "historialRM",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ejercicio",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "historialRM",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ejercicio",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
