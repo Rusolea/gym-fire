@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplicación de Ejercicios con Pesas</title>
+    <link rel="stylesheet" href="/public/css/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <style>
         /* Estilos previamente definidos */
-        .loading-container {
+        /* .loading-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-around;
@@ -27,12 +29,15 @@
 @keyframes loading {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
-}
+} */
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h1>Aplicación de Ejercicios con Pesas</h1>
+        <h1 class="text-center mb-4">FitTrack - Tu compañero de ejercicios</h1>
+        <!-- <img src="/public/assets/img/benchPress.webp" alt="Mujer de 27 años realizando sentadillas. Ella tiene pelo castaño, cuerpo delgado no musculoso, viste ropa deportiva y luce simpática. La imagen tiene un fondo azul claro y está tomada con una cámara réflex con iluminación profesional." class="hero-image"> -->
+
+
 
         <!-- Sección de autenticación -->
         <div id="authSection" class="mb-4">
@@ -54,7 +59,23 @@
                 <p>Bienvenido, <span id="userEmail"></span></p>
                 <button onclick="logout()" class="btn btn-danger">Cerrar sesión</button>
             </div>
+            <!-- Características de FitTrack -->
+            <!-- <div id="features" class="mb-4">
+                <h2>Con FitTrack puedes:</h2>
+                <ul class="feature-list">
+                    <li class="feature-item">🏋️‍♀️ Testear tus ejercicios y medir tu rendimiento</li>
+                    <li class="feature-item">📊 Ver tu progreso con gráficos detallados</li>
+                    <li class="feature-item">📝 Tomar notas y establecer metas para cada sesión</li>
+                    <li class="feature-item">🗓️ Acceder a un historial completo de tus entrenamientos</li>
+                    <li class="feature-item">🔍 Analizar tu desempeño en cada ejercicio específico</li>
+                </ul>
+            </div> -->
+
+            
         </div>
+
+        <!-- Características de FitTrack -->
+        
 
      <!-- Contenido principal (oculto hasta que el usuario inicie sesión) -->
         <!-- <div id="mainContent" style="display: none;">
@@ -96,7 +117,7 @@
     
      <!-- ejericcio cargados dinamicamnet  -->
      <!-- Contenido principal (oculto hasta que el usuario inicie sesión) -->
-    <div id="mainContent" >
+    <div id="mainContent"  >
         <div class="row" id="ejerciciosContainer">
             <div id="loadingEffect" class="loading-container">
                 <div class="loading-card"></div>
@@ -220,594 +241,625 @@
         </div>
     </div>
 
-
-
-
-
-
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyBXVn_VNPzVqcG4xQlhmM12E5EgkY5sT60",
-            authDomain: "gym-claude-687b5.firebaseapp.com",
-            projectId: "gym-claude-687b5",
-            storageBucket: "gym-claude-687b5.appspot.com",
-            messagingSenderId: "504115001424",
-            appId: "1:504115001424:web:86b8a0044a44bd03743955",
-            measurementId: "G-Q663J1MVKY"
-        };
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ejercicios.js"></script>
+    <script src="js/modales.js"></script>
+    <script src="js/app.js"></script>
 
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+    <script>
+        // // Configuración de Firebase
+        // const firebaseConfig = {
+        //     apiKey: "AIzaSyBXVn_VNPzVqcG4xQlhmM12E5EgkY5sT60",
+        //     authDomain: "gym-claude-687b5.firebaseapp.com",
+        //     projectId: "gym-claude-687b5",
+        //     storageBucket: "gym-claude-687b5.appspot.com",
+        //     messagingSenderId: "504115001424",
+        //     appId: "1:504115001424:web:86b8a0044a44bd03743955",
+        //     measurementId: "G-Q663J1MVKY"
+        // };
+
+        // // Inicializar Firebase
+        // firebase.initializeApp(firebaseConfig);
+        // const db = firebase.firestore();
+        // const auth = firebase.auth();
+        // const storage = firebase.storage();
 
         //listener de estado de autenticacion
-        auth.onAuthStateChanged((user) => {
-            if(user){
-                           // Usuario ha iniciado sesión
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('registerForm').style.display = 'none';
-                document.getElementById('userInfo').style.display = 'block';
-                document.getElementById('mainContent').style.display = 'block';
-                document.getElementById('userEmail').textContent = user.email;
+        // auth.onAuthStateChanged((user) => {
+        //     if(user){
+        //                    // Usuario ha iniciado sesión
+        //         document.getElementById('loginForm').style.display = 'none';
+        //         document.getElementById('registerForm').style.display = 'none';
+        //         document.getElementById('userInfo').style.display = 'block';
+        //         document.getElementById('mainContent').style.display = 'block';
+        //         document.getElementById('userEmail').textContent = user.email;
 
-                //carga imagenes dinamicamnete traidas desde firebase
-                cargarEjerciciosDesdeFirebase();
-            } else {
-                // Usuario no ha iniciado sesión
-                document.getElementById('loginForm').style.display = 'block';
-                document.getElementById('registerForm').style.display = 'none';
-                document.getElementById('userInfo').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'none';
-            }
+        //         //carga imagenes dinamicamnete traidas desde firebase
+        //         cargarEjerciciosDesdeFirebase();
+        //     } else {
+        //         // Usuario no ha iniciado sesión
+        //         document.getElementById('loginForm').style.display = 'block';
+        //         document.getElementById('registerForm').style.display = 'none';
+        //         document.getElementById('userInfo').style.display = 'none';
+        //         document.getElementById('mainContent').style.display = 'none';
+        //     }
 
-        });
+        // });
 
-        // Funciones de autenticación
-        function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            auth.signInWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    console.error("Error de inicio de sesión:", error);
-                    alert("Error de inicio de sesión: " + error.message);
-                });
-        }
+//         // Funciones de autenticación
+//         function login() {
+//             const email = document.getElementById('loginEmail').value;
+//             const password = document.getElementById('loginPassword').value;
+//             auth.signInWithEmailAndPassword(email, password)
+//                 .catch((error) => {
+//                     console.error("Error de inicio de sesión:", error);
+//                     alert("Error de inicio de sesión: " + error.message);
+//                 });
+//         }
 
-        //registrarse
-        // Crear un nuevo usuari
+//         //registrarse
+//         // Crear un nuevo usuari
 
         
 
 
-        function register() {
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
+//         function register() {
+//     const email = document.getElementById('registerEmail').value;
+//     const password = document.getElementById('registerPassword').value;
 
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            const user = userCredential.user;
+//     auth.createUserWithEmailAndPassword(email, password)
+//         .then((userCredential) => {
+//             const user = userCredential.user;
 
-            // Crear documento en Firestore para el nuevo usuario
-            db.collection('users').doc(user.uid).set({
-                email: user.email,
-                name: "", // Puedes solicitar un nombre en el formulario de registro y usarlo aquí.
-                role: "user", // Asigna "user" por defecto. Puedes cambiar a "admin" si es necesario.
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => {
-                console.log("Usuario registrado y documento creado en Firestore.");
-            })
-            .catch((error) => {
-                console.error("Error al crear documento en Firestore:", error);
-            });
-        })
-        .catch((error) => {
-            console.error("Error de registro:", error);
-            alert("Error de registro: " + error.message);
-        });
-}
+//             // Crear documento en Firestore para el nuevo usuario
+//             db.collection('users').doc(user.uid).set({
+//                 email: user.email,
+//                 name: "", // Puedes solicitar un nombre en el formulario de registro y usarlo aquí.
+//                 role: "user", // Asigna "user" por defecto. Puedes cambiar a "admin" si es necesario.
+//                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+//                 lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+//             })
+//             .then(() => {
+//                 console.log("Usuario registrado y documento creado en Firestore.");
+//             })
+//             .catch((error) => {
+//                 console.error("Error al crear documento en Firestore:", error);
+//             });
+//         })
+//         .catch((error) => {
+//             console.error("Error de registro:", error);
+//             alert("Error de registro: " + error.message);
+//         });
+// }
 
 
-        function logout() {
-            auth.signOut().then(() => {
-                console.log("Sesión cerrada");
-            }).catch((error) => {
-                console.error("Error al cerrar sesión:", error);
-            });
-        }
+//         function logout() {
+//             auth.signOut().then(() => {
+//                 console.log("Sesión cerrada");
+//             }).catch((error) => {
+//                 console.error("Error al cerrar sesión:", error);
+//             });
+//         }
 
-        function showRegisterForm() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('registerForm').style.display = 'block';
-        }
+//         function showRegisterForm() {
+//             document.getElementById('loginForm').style.display = 'none';
+//             document.getElementById('registerForm').style.display = 'block';
+//         }
 
-        function showLoginForm() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('registerForm').style.display = 'none';
-        }
+//         function showLoginForm() {
+//             document.getElementById('loginForm').style.display = 'block';
+//             document.getElementById('registerForm').style.display = 'none';
+//         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-    const myModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
+    //     document.addEventListener('DOMContentLoaded', function() {
+    // const myModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
     
-    document.querySelectorAll('.ejercicio img').forEach(img => {
-        img.addEventListener('click', function() {
-            const ejercicio = this.getAttribute('data-ejercicio');
-            const modalTitle = document.querySelector('#ejercicioModalLabel');
-            modalTitle.textContent = `Tabla de Pesos - ${ejercicio}`;
+//     document.querySelectorAll('.ejercicio img').forEach(img => {
+//         img.addEventListener('click', function() {
+//             const ejercicio = this.getAttribute('data-ejercicio');
+//             const modalTitle = document.querySelector('#ejercicioModalLabel');
+//             modalTitle.textContent = `Tabla de Pesos - ${ejercicio}`;
             
-            cargarTablaDePesos(ejercicio);
-            myModal.show();
-        });
-    });
-});
+//             cargarTablaDePesos(ejercicio);
+//             myModal.show();
+//         });
+//     });
+// });
 
-function checkUserRole(user) {
-    if (user) {
-        db.collection('users').doc(user.uid).get()
-            .then((doc) => {
-                if (doc.exists && doc.data().role === 'admin') {
-                    // Redirigir a la página de administración
-                    window.location.href = 'admin.html';
-                } else {
-                    // Mostrar la interfaz de usuario normal
-                    showUserInterface();
-                }
-            })
-            .catch((error) => {
-                console.error("Error al verificar el rol del usuario:", error);
-            });
-    } else {
-        // Usuario no autenticado, mostrar interfaz de login
-        showLoginInterface();
-    }
-}
+// function checkUserRole(user) {
+//     if (user) {
+//         db.collection('users').doc(user.uid).get()
+//             .then((doc) => {
+//                 if (doc.exists && doc.data().role === 'admin') {
+//                     // Redirigir a la página de administración
+//                     window.location.href = 'admin.html';
+//                 } else {
+//                     // Mostrar la interfaz de usuario normal
+//                     showUserInterface();
+//                 }
+//             })
+//             .catch((error) => {
+//                 console.error("Error al verificar el rol del usuario:", error);
+//             });
+//     } else {
+//         // Usuario no autenticado, mostrar interfaz de login
+//         showLoginInterface();
+//     }
+// }
 
-//cargar datos en tabla dentro del modal 1
-function cargarTablaDePesos(ejercicio) {
-    const user = auth.currentUser;
-    if (!user) {
-        console.error("Usuario no autenticado");
-        return;
-    }
+// //cargar datos en tabla dentro del modal 1
+// function cargarTablaDePesos(ejercicio) {
+//     const user = auth.currentUser;
+//     if (!user) {
+//         console.error("Usuario no autenticado");
+//         return;
+//     }
 
-    console.log(ejercicio)
-    db.collection("historialRM")
-        .where("userId", "==", user.uid)
-        .where("ejercicio", "==", ejercicio)
-        .orderBy("fecha", "desc")
-        .limit(1)
-        .get()
-        .then((querySnapshot) => {
-            const tablaHistorial = document.getElementById("tabla-pesos").getElementsByTagName("tbody")[0];
-            tablaHistorial.innerHTML = ""; // Limpia la tabla
+//     console.log(ejercicio)
+//     db.collection("historialRM")
+//         .where("userId", "==", user.uid)
+//         .where("ejercicio", "==", ejercicio)
+//         .orderBy("fecha", "desc")
+//         .limit(1)
+//         .get()
+//         .then((querySnapshot) => {
+//             const tablaHistorial = document.getElementById("tabla-pesos").getElementsByTagName("tbody")[0];
+//             tablaHistorial.innerHTML = ""; // Limpia la tabla
 
-            if (querySnapshot.empty) {
-                console.log("No se encontraron registros para este ejercicio");
-                tablaHistorial.innerHTML = "<tr><td colspan='2'>No se encontraron registros</td></tr>";
-                return;
-            }
+//             if (querySnapshot.empty) {
+//                 console.log("No se encontraron registros para este ejercicio");
+//                 tablaHistorial.innerHTML = "<tr><td colspan='2'>No se encontraron registros</td></tr>";
+//                 return;
+//             }
             
-            const doc = querySnapshot.docs[0];
-            const rm = doc.data().rm;
+//             const doc = querySnapshot.docs[0];
+//             const rm = doc.data().rm;
 
-            for (let rep = 1; rep <= 15; rep++) {
-                const row = tablaHistorial.insertRow();
-                const repCell = row.insertCell();
-                const pesoCell = row.insertCell();
+//             for (let rep = 1; rep <= 15; rep++) {
+//                 const row = tablaHistorial.insertRow();
+//                 const repCell = row.insertCell();
+//                 const pesoCell = row.insertCell();
                 
-                repCell.textContent = rep;
-                // Cálculo del peso usando la fórmula de Brzycki
-                const peso = rm * (1.0278 - 0.0278 * rep);
-                pesoCell.textContent = Math.round(peso * 100) / 100 + " kg"; // Redondear a 2 decimales
-            }
-        })
-        .catch((error) => {
-            console.error("Error al obtener los documentos: ", error);
-            alert("Error al obtener los registros: " + error.message);
-            document.getElementById("tabla-pesos").getElementsByTagName("tbody")[0].innerHTML = "<tr><td colspan='2'>Error al cargar los datos</td></tr>";
-        });
-}
+//                 repCell.textContent = rep;
+//                 // Cálculo del peso usando la fórmula de Brzycki
+//                 const peso = rm * (1.0278 - 0.0278 * rep);
+//                 pesoCell.textContent = Math.round(peso * 100) / 100 + " kg"; // Redondear a 2 decimales
+//             }
+//         })
+//         .catch((error) => {
+//             console.error("Error al obtener los documentos: ", error);
+//             alert("Error al obtener los registros: " + error.message);
+//             document.getElementById("tabla-pesos").getElementsByTagName("tbody")[0].innerHTML = "<tr><td colspan='2'>Error al cargar los datos</td></tr>";
+//         });
+// }
 
-//boton para ver registros histtoricos con dia mes año, RM, peso y repeticiones , ejercicio.
-// Función para ver registros históricos
-function verRegistros() {
-    const user = auth.currentUser;
-            if (!user) {
-                console.error("Usuario no autenticado");
-                return;
-            }
-    console.log("Iniciando función verRegistros()");
+// //boton para ver registros histtoricos con dia mes año, RM, peso y repeticiones , ejercicio.
+// // Función para ver registros históricos
+// function verRegistros() {
+//     const user = auth.currentUser;
+//             if (!user) {
+//                 console.error("Usuario no autenticado");
+//                 return;
+//             }
+//     console.log("Iniciando función verRegistros()");
     
-    const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
-    console.log("Ejercicio seleccionado:", ejercicio);
+//     const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
+//     console.log("Ejercicio seleccionado:", ejercicio);
     
-    // Cerrar el modal de la tabla de pesos
-    const tablaPesosModal = bootstrap.Modal.getInstance(document.getElementById('ejercicioModal'));
-    tablaPesosModal.hide();
+//     // Cerrar el modal de la tabla de pesos
+//     const tablaPesosModal = bootstrap.Modal.getInstance(document.getElementById('ejercicioModal'));
+//     tablaPesosModal.hide();
 
-    // Abrir el modal de registros
-    const recordsModal = new bootstrap.Modal(document.getElementById('recordsModal'));
-    recordsModal.show();
+//     // Abrir el modal de registros
+//     const recordsModal = new bootstrap.Modal(document.getElementById('recordsModal'));
+//     recordsModal.show();
 
-    document.getElementById('recordsModal').addEventListener('shown.bs.modal', function () {
-        console.log("Modal de registros mostrado");
+//     document.getElementById('recordsModal').addEventListener('shown.bs.modal', function () {
+//         console.log("Modal de registros mostrado");
         
-        const tabla = document.getElementById("tabla-registros");
-        if (!tabla) {
-            console.error("No se pudo encontrar la tabla con id 'tabla-registros'");
-            alert("Error: No se pudo encontrar la tabla de registros");
-            return;
-        }
+//         const tabla = document.getElementById("tabla-registros");
+//         if (!tabla) {
+//             console.error("No se pudo encontrar la tabla con id 'tabla-registros'");
+//             alert("Error: No se pudo encontrar la tabla de registros");
+//             return;
+//         }
 
-        let tbody = tabla.querySelector("tbody");
-        if (!tbody) {
-            console.log("No se encontró <tbody>, creando uno nuevo");
-            tbody = document.createElement("tbody");
-            tabla.appendChild(tbody);
-        }
+//         let tbody = tabla.querySelector("tbody");
+//         if (!tbody) {
+//             console.log("No se encontró <tbody>, creando uno nuevo");
+//             tbody = document.createElement("tbody");
+//             tabla.appendChild(tbody);
+//         }
 
-        // Limpiar la tabla
-        tbody.innerHTML = "";
-        console.log("Tabla limpiada");
+//         // Limpiar la tabla
+//         tbody.innerHTML = "";
+//         console.log("Tabla limpiada");
 
-        // Realizar la consulta a Firestore
-        db.collection("historialRM")
-            .where("userId", "==", user.uid)
-            .where("ejercicio", "==", ejercicio)
-            .orderBy("fecha", "desc")
-            .get()
-            .then((querySnapshot) => {
-                console.log("Consulta a Firestore completada");
-                if (querySnapshot.empty) {
-                    const row = tbody.insertRow();
-                    const cell = row.insertCell();
-                    cell.colSpan = 5;
-                    cell.textContent = "No se encontraron registros para este ejercicio";
-                    console.log("No se encontraron registros");
-                } else {
-                    querySnapshot.forEach((doc) => {
-                        const row = tbody.insertRow();
-                        const data = doc.data();
+//         // Realizar la consulta a Firestore
+//         db.collection("historialRM")
+//             .where("userId", "==", user.uid)
+//             .where("ejercicio", "==", ejercicio)
+//             .orderBy("fecha", "desc")
+//             .get()
+//             .then((querySnapshot) => {
+//                 console.log("Consulta a Firestore completada");
+//                 if (querySnapshot.empty) {
+//                     const row = tbody.insertRow();
+//                     const cell = row.insertCell();
+//                     cell.colSpan = 5;
+//                     cell.textContent = "No se encontraron registros para este ejercicio";
+//                     console.log("No se encontraron registros");
+//                 } else {
+//                     querySnapshot.forEach((doc) => {
+//                         const row = tbody.insertRow();
+//                         const data = doc.data();
                         
-                        // Fecha
-                        const date = data.fecha.toDate();
-                        row.insertCell().textContent = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+//                         // Fecha
+//                         const date = data.fecha.toDate();
+//                         row.insertCell().textContent = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
                         
-                        // RM, Peso, Repeticiones
-                        row.insertCell().textContent = data.rm;
-                        row.insertCell().textContent = data.peso;
-                        row.insertCell().textContent = data.reps;
+//                         // RM, Peso, Repeticiones
+//                         row.insertCell().textContent = data.rm;
+//                         row.insertCell().textContent = data.peso;
+//                         row.insertCell().textContent = data.reps;
                         
-                        // Acciones
-                        const accionesCell = row.insertCell();
-                        const editarBtn = document.createElement('button');
-                        editarBtn.textContent = 'Editar';
-                        editarBtn.className = 'btn btn-sm btn-warning me-2';
-                        editarBtn.onclick = () => editarRegistro(doc.id, data);
+//                         // Acciones
+//                         const accionesCell = row.insertCell();
+//                         const editarBtn = document.createElement('button');
+//                         editarBtn.textContent = 'Editar';
+//                         editarBtn.className = 'btn btn-sm btn-warning me-2';
+//                         editarBtn.onclick = () => editarRegistro(doc.id, data);
                         
-                        const borrarBtn = document.createElement('button');
-                        borrarBtn.textContent = 'Borrar';
-                        borrarBtn.className = 'btn btn-sm btn-danger';
-                        borrarBtn.onclick = () => eliminarRegistro(doc.id);
+//                         const borrarBtn = document.createElement('button');
+//                         borrarBtn.textContent = 'Borrar';
+//                         borrarBtn.className = 'btn btn-sm btn-danger';
+//                         borrarBtn.onclick = () => eliminarRegistro(doc.id);
                         
-                        accionesCell.appendChild(editarBtn);
-                        accionesCell.appendChild(borrarBtn);
-                    });
-                    console.log("Registros añadidos a la tabla");
-                }
-            })
-            .catch((error) => {
-                console.error("Error al obtener los documentos: ", error);
-                alert("Error al obtener los registros: " + error.message);
-            });
-    }, { once: true }); // Añadimos { once: true } para que el evento solo se ejecute una vez
-}
+//                         accionesCell.appendChild(editarBtn);
+//                         accionesCell.appendChild(borrarBtn);
+//                     });
+//                     console.log("Registros añadidos a la tabla");
+//                 }
+//             })
+//             .catch((error) => {
+//                 console.error("Error al obtener los documentos: ", error);
+//                 alert("Error al obtener los registros: " + error.message);
+//             });
+//     }, { once: true }); // Añadimos { once: true } para que el evento solo se ejecute una vez
+// }
 
 
 
-function volverATabla() {
-    console.log("Volviendo a la tabla de pesos");
+// function volverATabla() {
+//     console.log("Volviendo a la tabla de pesos");
     
-    // Cerrar el modal de cálculo 1RM si está abierto
-    const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
-    if (calculo1RMModal) {
-        calculo1RMModal.hide();
-    }
+//     // Cerrar el modal de cálculo 1RM si está abierto
+//     const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
+//     if (calculo1RMModal) {
+//         calculo1RMModal.hide();
+//     }
 
-    // Cerrar el modal de registros si está abierto
-    const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
-    if (recordsModal) {
-        recordsModal.hide();
-    }
+//     // Cerrar el modal de registros si está abierto
+//     const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
+//     if (recordsModal) {
+//         recordsModal.hide();
+//     }
 
-    // Abrir el modal de la tabla de pesos
-    const tablaPesosModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
-    tablaPesosModal.show();
+//     // Abrir el modal de la tabla de pesos
+//     const tablaPesosModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
+//     tablaPesosModal.show();
 
-    // Recargar la tabla de pesos
-    const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
-    cargarTablaDePesos(ejercicio);
-}
+//     // Recargar la tabla de pesos
+//     const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
+//     cargarTablaDePesos(ejercicio);
+// }
    
 
 
-// Modificar la función calcular1RM para resetear el formulario y el botón
-function calcular1RM() {
-    console.log("Abriendo modal de cálculo 1RM");
+// // Modificar la función calcular1RM para resetear el formulario y el botón
+// function calcular1RM() {
+//     console.log("Abriendo modal de cálculo 1RM");
     
-    // Resetear el formulario
-    document.getElementById('pesoUsado').value = '';
-    document.getElementById('repsLogradas').value = '';
+//     // Resetear el formulario
+//     document.getElementById('pesoUsado').value = '';
+//     document.getElementById('repsLogradas').value = '';
 
-    // Resetear el texto y la función del botón
-    const guardarBtn = document.querySelector('#calculo1RMModal .btn-success');
-    guardarBtn.textContent = 'Calcular y Guardar';
-    guardarBtn.onclick = guardar1RM;
+//     // Resetear el texto y la función del botón
+//     const guardarBtn = document.querySelector('#calculo1RMModal .btn-success');
+//     guardarBtn.textContent = 'Calcular y Guardar';
+//     guardarBtn.onclick = guardar1RM;
 
-    // Cerrar el modal de la tabla de pesos
-    const tablaPesosModal = bootstrap.Modal.getInstance(document.getElementById('ejercicioModal'));
-    tablaPesosModal.hide();
+//     // Cerrar el modal de la tabla de pesos
+//     const tablaPesosModal = bootstrap.Modal.getInstance(document.getElementById('ejercicioModal'));
+//     tablaPesosModal.hide();
 
-    // Abrir el modal de cálculo 1RM
-    const calculo1RMModal = new bootstrap.Modal(document.getElementById('calculo1RMModal'));
-    calculo1RMModal.show();
-}
+//     // Abrir el modal de cálculo 1RM
+//     const calculo1RMModal = new bootstrap.Modal(document.getElementById('calculo1RMModal'));
+//     calculo1RMModal.show();
+// }
 
-// Modificar la función guardar1RM para resetear el formulario después de guardar
-async function guardar1RM() {
-    const user = auth.currentUser;
-            if (!user) {
-                console.error("Usuario no autenticado");
-                return;
-            }
+// // Modificar la función guardar1RM para resetear el formulario después de guardar
+// async function guardar1RM() {
+//     const user = auth.currentUser;
+//             if (!user) {
+//                 console.error("Usuario no autenticado");
+//                 return;
+//             }
 
-    console.log("Iniciando cálculo y guardado de 1RM");
+//     console.log("Iniciando cálculo y guardado de 1RM");
     
-    const peso = parseFloat(document.getElementById('pesoUsado').value);
-    const reps = parseInt(document.getElementById('repsLogradas').value);
-    const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
+//     const peso = parseFloat(document.getElementById('pesoUsado').value);
+//     const reps = parseInt(document.getElementById('repsLogradas').value);
+//     const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
 
-    if (isNaN(peso) || isNaN(reps) || peso <= 0 || reps <= 0) {
-        alert('Por favor, ingrese valores válidos para peso y repeticiones.');
-        return;
-    }
+//     if (isNaN(peso) || isNaN(reps) || peso <= 0 || reps <= 0) {
+//         alert('Por favor, ingrese valores válidos para peso y repeticiones.');
+//         return;
+//     }
 
-    // Fórmula de Brzycki para estimar 1RM
-    const rm1 = Math.round(peso / (1.0278 - 0.0278 * reps));
+//     // Fórmula de Brzycki para estimar 1RM
+//     const rm1 = Math.round(peso / (1.0278 - 0.0278 * reps));
 
-    const nuevoRegistro = {
-        userId: user.uid,
-        fecha: new Date(),
-        rm: rm1,
-        peso: peso,
-        reps: reps,
-        ejercicio: ejercicio
-    };
+//     const nuevoRegistro = {
+//         userId: user.uid,
+//         fecha: new Date(),
+//         rm: rm1,
+//         peso: peso,
+//         reps: reps,
+//         ejercicio: ejercicio
+//     };
 
-    // Colección: historialRM
-{
-//   id: string, // ID del documento (generado automáticamente por Firestore)
+//     // Colección: historialRM
+// {
+// //   id: string, // ID del documento (generado automáticamente por Firestore)
   
   
   
  
-}
+// }
 
-    try {
-        await db.collection("historialRM").add(nuevoRegistro);
-        console.log("Registro guardado en Firestore con éxito");
-        alert(`Nuevo 1RM calculado y guardado: ${rm1} kg`);
+//     try {
+//         await db.collection("historialRM").add(nuevoRegistro);
+//         console.log("Registro guardado en Firestore con éxito");
+//         alert(`Nuevo 1RM calculado y guardado: ${rm1} kg`);
         
-        // Resetear el formulario
-        document.getElementById('pesoUsado').value = '';
-        document.getElementById('repsLogradas').value = '';
+//         // Resetear el formulario
+//         document.getElementById('pesoUsado').value = '';
+//         document.getElementById('repsLogradas').value = '';
         
-        // Cerrar el modal de cálculo 1RM
-        const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
-        calculo1RMModal.hide();
+//         // Cerrar el modal de cálculo 1RM
+//         const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
+//         calculo1RMModal.hide();
 
-        // Volver a la tabla de pesos
-        volverATabla();
-    } catch (error) {
-        console.error("Error al guardar en Firestore: ", error);
-        alert("Hubo un error al guardar el registro en la base de datos.");
-    }
-}
+//         // Volver a la tabla de pesos
+//         volverATabla();
+//     } catch (error) {
+//         console.error("Error al guardar en Firestore: ", error);
+//         alert("Hubo un error al guardar el registro en la base de datos.");
+//     }
+// }
 
-// Función para eliminar un registro
-function eliminarRegistro(docId) {
-    if (confirm('¿Estás seguro de que quieres eliminar este registro?')) {
-        db.collection("historialRM").doc(docId).delete().then(() => {
-            console.log("Registro eliminado con éxito");
-            alert("Registro eliminado con éxito");
-            // En lugar de llamar a verRegistros, cerramos el modal actual y volvemos a abrirlo
-            const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
-            recordsModal.hide();
-            setTimeout(() => verRegistros(), 500); // Esperamos un poco antes de volver a abrir el modal
-        }).catch((error) => {
-            console.error("Error al eliminar el registro: ", error);
-            alert("Error al eliminar el registro: " + error.message);
-        });
-    }
-}
+// // Función para eliminar un registro
+// function eliminarRegistro(docId) {
+//     if (confirm('¿Estás seguro de que quieres eliminar este registro?')) {
+//         db.collection("historialRM").doc(docId).delete().then(() => {
+//             console.log("Registro eliminado con éxito");
+//             alert("Registro eliminado con éxito");
+//             // En lugar de llamar a verRegistros, cerramos el modal actual y volvemos a abrirlo
+//             const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
+//             recordsModal.hide();
+//             setTimeout(() => verRegistros(), 500); // Esperamos un poco antes de volver a abrir el modal
+//         }).catch((error) => {
+//             console.error("Error al eliminar el registro: ", error);
+//             alert("Error al eliminar el registro: " + error.message);
+//         });
+//     }
+// }
 
 
 
-// Función para editar un registro
-function editarRegistro(docId, data) {
-    console.log("Editando registro:", docId);
+// // Función para editar un registro
+// function editarRegistro(docId, data) {
+//     console.log("Editando registro:", docId);
     
-    // Cerrar el modal de registros
-    const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
-    recordsModal.hide();
+//     // Cerrar el modal de registros
+//     const recordsModal = bootstrap.Modal.getInstance(document.getElementById('recordsModal'));
+//     recordsModal.hide();
 
-    // Abrir el modal de cálculo 1RM
-    const calculo1RMModal = new bootstrap.Modal(document.getElementById('calculo1RMModal'));
-    calculo1RMModal.show();
+//     // Abrir el modal de cálculo 1RM
+//     const calculo1RMModal = new bootstrap.Modal(document.getElementById('calculo1RMModal'));
+//     calculo1RMModal.show();
 
-    // Rellenar el formulario con los datos actuales
-    document.getElementById('pesoUsado').value = data.peso;
-    document.getElementById('repsLogradas').value = data.reps;
+//     // Rellenar el formulario con los datos actuales
+//     document.getElementById('pesoUsado').value = data.peso;
+//     document.getElementById('repsLogradas').value = data.reps;
 
-    // Cambiar el texto del botón
-    const guardarBtn = document.querySelector('#calculo1RMModal .btn-success');
-    guardarBtn.textContent = 'Actualizar';
+//     // Cambiar el texto del botón
+//     const guardarBtn = document.querySelector('#calculo1RMModal .btn-success');
+//     guardarBtn.textContent = 'Actualizar';
     
-    // Cambiar la función del botón
-    guardarBtn.onclick = () => actualizarRegistro(docId);
-}
+//     // Cambiar la función del botón
+//     guardarBtn.onclick = () => actualizarRegistro(docId);
+// }
 
-// Función para actualizar un registro
-async function actualizarRegistro(docId) {
-    console.log("Actualizando registro:", docId);
+// // Función para actualizar un registro
+// async function actualizarRegistro(docId) {
+//     console.log("Actualizando registro:", docId);
     
-    const peso = parseFloat(document.getElementById('pesoUsado').value);
-    const reps = parseInt(document.getElementById('repsLogradas').value);
-    const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
+//     const peso = parseFloat(document.getElementById('pesoUsado').value);
+//     const reps = parseInt(document.getElementById('repsLogradas').value);
+//     const ejercicio = document.querySelector('#ejercicioModalLabel').textContent.split(' - ')[1];
 
-    if (isNaN(peso) || isNaN(reps) || peso <= 0 || reps <= 0) {
-        alert('Por favor, ingrese valores válidos para peso y repeticiones.');
-        return;
-    }
+//     if (isNaN(peso) || isNaN(reps) || peso <= 0 || reps <= 0) {
+//         alert('Por favor, ingrese valores válidos para peso y repeticiones.');
+//         return;
+//     }
 
-    // Fórmula de Brzycki para estimar 1RM
-    const rm1 = Math.round(peso / (1.0278 - 0.0278 * reps));
+//     // Fórmula de Brzycki para estimar 1RM
+//     const rm1 = Math.round(peso / (1.0278 - 0.0278 * reps));
 
-    const registroActualizado = {
-        fecha: new Date(),
-        rm: rm1,
-        peso: peso,
-        reps: reps,
-        ejercicio: ejercicio
-    };
+//     const registroActualizado = {
+//         fecha: new Date(),
+//         rm: rm1,
+//         peso: peso,
+//         reps: reps,
+//         ejercicio: ejercicio
+//     };
 
-    try {
-        await db.collection("historialRM").doc(docId).update(registroActualizado);
-        console.log("Registro actualizado en Firestore con éxito");
-        alert(`Registro actualizado con éxito. Nuevo 1RM: ${rm1} kg`);
+//     try {
+//         await db.collection("historialRM").doc(docId).update(registroActualizado);
+//         console.log("Registro actualizado en Firestore con éxito");
+//         alert(`Registro actualizado con éxito. Nuevo 1RM: ${rm1} kg`);
         
-        // Cerrar el modal de cálculo 1RM
-        const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
-        calculo1RMModal.hide();
+//         // Cerrar el modal de cálculo 1RM
+//         const calculo1RMModal = bootstrap.Modal.getInstance(document.getElementById('calculo1RMModal'));
+//         calculo1RMModal.hide();
 
-        // Volver a la tabla de registros
-        verRegistros();
-    } catch (error) {
-        console.error("Error al actualizar en Firestore: ", error);
-        alert("Hubo un error al actualizar el registro en la base de datos.");
-    }
-}
+//         // Volver a la tabla de registros
+//         verRegistros();
+//     } catch (error) {
+//         console.error("Error al actualizar en Firestore: ", error);
+//         alert("Hubo un error al actualizar el registro en la base de datos.");
+//     }
+// }
 
-//el directoiro de la imagens es public, esta funcion busca este direcorio y lo agrega a la URL del html
-function getImageUrl(url) {
-  return `/public/${url}`;
-}
+// //el directoiro de la imagens es public, esta funcion busca este direcorio y lo agrega a la URL del html
+// // function getImageUrl(url) {
+// //   return `/public/${url}`;
+// // }
 
-// Y luego usarla en tu HTML así:
+// //obtiene las imagenes de la url en firebase en base a la ruta storage de firebase 
 
-//cargar contenido imagenes de ejercicios dinamicamnete 
-// Función para cargar ejercicios dinámicamente
-// Asegúrate de haber inicializado Firebase antes de usar estas funciones
 
-function cargarEjerciciosDesdeFirebase() {
-  const ejerciciosContainer = document.getElementById('ejerciciosContainer');
-  const loadingEffect = document.getElementById('loadingEffect'); // Asegúrate de tener este elemento en tu HTML
+// async function getImageUrl(path) {
+//   try {
+//     if (path.startsWith('gs://')) {
+//       // Si es una URL de gs://, usamos refFromURL
+//       const url = await storage.refFromURL(path).getDownloadURL();
+//       return url;
+//     } else {
+//       // Si es una ruta relativa, usamos ref
+//       const url = await storage.ref(path).getDownloadURL();
+//       return url;
+//     }
+//   } catch (error) {
+//     console.error("Error al obtener la URL de la imagen:", error);
+//     return '/path/to/placeholder/image.jpg'; // Una imagen por defecto en caso de error
+//   }
+// }
 
-  // Mostrar efecto de carga
-  loadingEffect.style.display = 'block';
-  ejerciciosContainer.style.display = 'none';
+// // Y luego usarla en tu HTML así:
 
-  db.collection("ejercicios").get().then((querySnapshot) => {
-    // Ocultar efecto de carga y mostrar contenedor de ejercicios
-    loadingEffect.style.display = 'none';
-    ejerciciosContainer.style.display = 'flex';
+// //cargar contenido imagenes de ejercicios dinamicamnete 
+// // Función para cargar ejercicios dinámicamente
+// // Asegúrate de haber inicializado Firebase antes de usar estas funciones
 
-    ejerciciosContainer.innerHTML = ''; // Limpia el contenedor
+// async function cargarEjerciciosDesdeFirebase() {
+//   const ejerciciosContainer = document.getElementById('ejerciciosContainer');
+//   const loadingEffect = document.getElementById('loadingEffect');
 
-    //     <img src="${ejercicio.imagenUrl}" class="card-img-top rounded" alt="${ejercicio.nombre}" esta linea fue reemplaada pafra verigicar las imagens
+//   loadingEffect.style.display = 'block';
+//   ejerciciosContainer.style.display = 'none';
 
-    querySnapshot.forEach((doc) => {
-      const ejercicio = doc.data();
-      const ejercicioHTML = `
-        <div class="col-md-4">
-          <div class="card text-center mb-4">
-            <div class="ejercicio card-body">
-                <img src="${getImageUrl(ejercicio.imagenUrl)}" class="card-img-top rounded" alt="${ejercicio.nombre}"
-         
-                   data-bs-toggle="modal" data-bs-target="#ejercicioModal" data-ejercicio="${ejercicio.nombre}">
-              <h5 class="card-title mt-3">${ejercicio.nombre}</h5>
-            </div>
-          </div>
-        </div>
-      `;
-      ejerciciosContainer.innerHTML += ejercicioHTML;
-    });
+//   try {
+//     const querySnapshot = await db.collection("ejercicios").get();
     
-    // Vuelve a agregar los event listeners después de cargar el contenido
-    agregarEventListeners();
-  }).catch((error) => {
-    console.error("Error al cargar ejercicios:", error);
-    loadingEffect.style.display = 'none';
-    ejerciciosContainer.innerHTML = '<p>Error al cargar los ejercicios. Por favor, intenta de nuevo más tarde.</p>';
-  });
-}
+//     loadingEffect.style.display = 'none';
+//     ejerciciosContainer.style.display = 'flex';
+//     ejerciciosContainer.innerHTML = '';
 
-function agregarEventListeners() {
-  document.querySelectorAll('.ejercicio img').forEach(img => {
-    img.addEventListener('click', function() {
-      const ejercicio = this.getAttribute('data-ejercicio');
-      const modalTitle = document.querySelector('#ejercicioModalLabel');
-      modalTitle.textContent = `Tabla de Pesos - ${ejercicio}`;
-      cargarTablaDePesos(ejercicio);
-      // Asumiendo que estás usando Bootstrap para los modales
-      var myModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
-      myModal.show();
-    });
-  });
-}
+//     for (const doc of querySnapshot.docs) {
+//       const ejercicio = doc.data();
+//       let imageUrl;
+//       try {
+//         imageUrl = await getImageUrl(ejercicio.imagenUrl);
+//       } catch (error) {
+//         console.error(`Error al obtener URL para ${ejercicio.nombre}:`, error);
+//         imageUrl = '/path/to/placeholder/image.jpg'; // Usa una imagen de placeholder
+//       }
+      
+//       const ejercicioHTML = `
+//         <div class="col-md-4">
+//           <div class="card text-center mb-4">
+//             <div class="ejercicio card-body">
+//               <img src="${imageUrl}" class="card-img-top rounded" alt="${ejercicio.nombre}"
+//                    data-bs-toggle="modal" data-bs-target="#ejercicioModal" data-ejercicio="${ejercicio.nombre}">
+//               <h5 class="card-title mt-3">${ejercicio.nombre}</h5>
+//             </div>
+//           </div>
+//         </div>
+//       `;
+//       ejerciciosContainer.innerHTML += ejercicioHTML;
+//     }
+    
+//     agregarEventListeners();
+//   } catch (error) {
+//     console.error("Error al cargar ejercicios:", error);
+//     loadingEffect.style.display = 'none';
+//     ejerciciosContainer.innerHTML = '<p>Error al cargar los ejercicios. Por favor, intenta de nuevo más tarde.</p>';
+//   }
+// }
+
+
+
+// function agregarEventListeners() {
+//   document.querySelectorAll('.ejercicio img').forEach(img => {
+//     img.addEventListener('click', function() {
+//       const ejercicio = this.getAttribute('data-ejercicio');
+//       const modalTitle = document.querySelector('#ejercicioModalLabel');
+//       modalTitle.textContent = `Tabla de Pesos - ${ejercicio}`;
+//       cargarTablaDePesos(ejercicio);
+//       // Asumiendo que estás usando Bootstrap para los modales
+//       var myModal = new bootstrap.Modal(document.getElementById('ejercicioModal'));
+//       myModal.show();
+//     });
+//   });
+// }
 
 //////////modales////////
 
-//cerrar modal 
-function cerrarModal(modalId) {
-    const modal = document.getElementById(modalId);
-    const modalInstance = bootstrap.Modal.getInstance(modal);
-    if (modalInstance) {
-        modalInstance.hide();
-    }
-    limpiarBackdrop();
-}
+// //cerrar modal 
+// function cerrarModal(modalId) {
+//     const modal = document.getElementById(modalId);
+//     const modalInstance = bootstrap.Modal.getInstance(modal);
+//     if (modalInstance) {
+//         modalInstance.hide();
+//     }
+//     limpiarBackdrop();
+// }
 
-function limpiarBackdrop() {
-    // Eliminar manualmente el backdrop si persiste
-    const backdrop = document.querySelector('.modal-backdrop');
-    if (backdrop) {
-        backdrop.remove();
-    }
-    // Restaurar el scroll del body
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-}
+// function limpiarBackdrop() {
+//     // Eliminar manualmente el backdrop si persiste
+//     const backdrop = document.querySelector('.modal-backdrop');
+//     if (backdrop) {
+//         backdrop.remove();
+//     }
+//     // Restaurar el scroll del body
+//     document.body.classList.remove('modal-open');
+//     document.body.style.overflow = '';
+//     document.body.style.paddingRight = '';
+// }
 
-function inicializarModales() {
-    const modales = ['ejercicioModal', 'calculo1RMModal', 'recordsModal'];
-    modales.forEach(modalId => {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.addEventListener('hidden.bs.modal', function () {
-                limpiarBackdrop();
-            });
-        }
-    });
-}
+// function inicializarModales() {
+//     const modales = ['ejercicioModal', 'calculo1RMModal', 'recordsModal'];
+//     modales.forEach(modalId => {
+//         const modal = document.getElementById(modalId);
+//         if (modal) {
+//             modal.addEventListener('hidden.bs.modal', function () {
+//                 limpiarBackdrop();
+//             });
+//         }
+//     });
+// }
 
 // Llamar a esta función cuando el DOM esté cargado
-document.addEventListener('DOMContentLoaded', inicializarModales);
+// document.addEventListener('DOMContentLoaded', inicializarModales);
 
 
 

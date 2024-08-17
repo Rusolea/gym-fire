@@ -1,0 +1,52 @@
+
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background-color: #e6f2ff; /* Fondo azul claro */
+}
+
+#features{
+    padding-top: 3rem;
+}
+.feature-list {
+    list-style-type: none;
+    padding: 0;
+}
+.feature-item {
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+.feature-item:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+.loading-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+.loading-card {
+    width: 200px;
+    height: 250px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    margin: 10px;
+    border-radius: 8px;
+}
+
+.hero-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
